@@ -6,49 +6,61 @@ local highlight = Instance.new("Highlight")
 highlight.Name = "Highlight"
 
 local highlightEnabled = false
-local useTeamColor = true  -- Usar a cor da equipe por padrão
+local useTeamColor = true
 local espColor = Color3.new(1, 1, 1)
 
 local function getHighlightColor(player)
-    return useTeamColor and getTeamColor(player) or espColor
+    return useTeamColor and player.TeamColor.Color or espColor
 end
 
 local function updateHighlightColor(player)
-    local highlightInstance = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart"):FindFirstChild("Highlight")
-    if highlightInstance then
-        highlightInstance.Color3 = getHighlightColor(player)
+    local character = player.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        local highlightInstance = humanoidRootPart and humanoidRootPart:FindFirstChild("Highlight")
+        if highlightInstance then
+            highlightInstance.Color3 = getHighlightColor(player)
+        end
     end
 end
 
 local function createOrUpdateHighlight(player)
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local highlightClone = player.Character:FindFirstChild("HumanoidRootPart"):FindFirstChild("Highlight")
-        if not highlightClone then
-            highlightClone = highlight:Clone()
-            highlightClone.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
-            highlightClone.Parent = player.Character:FindFirstChild("HumanoidRootPart")
-            highlightClone.Name = "Highlight"
-            highlightClone.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    local character = player.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local highlightClone = humanoidRootPart:FindFirstChild("Highlight")
+            if not highlightClone then
+                highlightClone = highlight:Clone()
+                highlightClone.Adornee = humanoidRootPart
+                highlightClone.Parent = humanoidRootPart
+                highlightClone.Name = "Highlight"
+                highlightClone.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            end
+            highlightClone.Color3 = getHighlightColor(player)
         end
-        highlightClone.Color3 = getHighlightColor(player)
     end
 end
 
 local function removeHighlight(player)
-    local highlightInstance = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("HumanoidRootPart"):FindFirstChild("Highlight")
-    if highlightInstance then
-        highlightInstance:Destroy()
+    local character = player.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local highlightInstance = humanoidRootPart:FindFirstChild("Highlight")
+            if highlightInstance then
+                highlightInstance:Destroy()
+            end
+        end
     end
 end
 
 local function toggleCallback(value)
     highlightEnabled = value
-    if highlightEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
+    for _, player in pairs(Players:GetPlayers()) do
+        if highlightEnabled then
             createOrUpdateHighlight(player)
-        end
-    else
-        for _, player in pairs(Players:GetPlayers()) do
+        else
             removeHighlight(player)
         end
     end
@@ -61,6 +73,7 @@ local function colorDropdownCallback(value)
         useTeamColor = false
         espColor = value
     end
+
     if highlightEnabled then
         for _, player in pairs(Players:GetPlayers()) do
             updateHighlightColor(player)
@@ -72,7 +85,7 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local espColors = {
-    "Team Color",  -- Adiciona a opção para usar a cor da equipe
+    "Team Color",
     Color3.new(1, 0, 0),
     Color3.new(0, 1, 0),
     Color3.new(0, 0, 1),
